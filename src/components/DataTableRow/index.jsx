@@ -1,4 +1,5 @@
 import DataTableActions from "../DataTableActions";
+import convert from "@/utils/moneyMask";
 
 export default function DataTableRow({ product })  {
     return(
@@ -22,7 +23,7 @@ export default function DataTableRow({ product })  {
                 { product.minimum_quantity }
             </td>
             <td scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                { product.selling_price }
+                { convert(product.selling_price) }
             </td>
             <DataTableActions targetId={ product.id } />
         </tr>

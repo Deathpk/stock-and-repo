@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
-import { useRouter } from "next/router";
 import { setupAPIClient } from "@/services/api/api";
+import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
+import { editProduct } from "@/services/api/products";
 
 export default function ProductEdit({ product }) {
+    const navbarTitleContext = useContext(NavbarTitleContext);
+    navbarTitleContext.updateNavbarTitle("Editar produto");
+
     const [name, setName] = useState(product.name);
     const [description, setDescription] = useState(product.description);
     const [quantity, setQuantity] = useState(product.quantity);
@@ -14,9 +18,21 @@ export default function ProductEdit({ product }) {
     const [minimumQuantity, setMinimumQuantity] = useState(product.minimum_quantity);
     const [externalProductId, setExternalProductId] = useState(product.external_product_id);
 
-    function submitHandler(productData) {
-        // editProduct(productData);
-        // navigate(0);
+     function submitHandler(event) {
+        event.preventDefault();
+        const data = {
+            productId: product.id,
+            name: name,
+            description: description,
+            quantity: quantity,
+            paidPrice: paidPrice,
+            sellingPrice: sellingPrice,
+            category: category,
+            brand: brand,
+            minimumQuantity: minimumQuantity,
+            externalProductId: externalProductId
+        }
+        editProduct(data);
     }
 
     return(

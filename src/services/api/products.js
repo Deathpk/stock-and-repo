@@ -28,31 +28,23 @@ export async function getSpecificProduct(productId, setProductData, setProcessin
     })
 }
 
-export async function createNewProduct(productData, navigate) {
-    await api.post("/products/create", productData)
-    .then(response => {
-        if(response.data.success) {
-            navigate(0);
-        }
-    })
-    .catch(error => {
-        console.log(error);
-    });
+export async function createNewProduct(productData) {
+    await api.post("/products/create", productData);
 }
 
 export async function editProduct(data) {
     console.log("meu amiigo")
     console.log(data);
-    const productData = {
-        productId: data.productId,
-        name: data.name,
-        description: data.description,
-        quantity: Number.parseInt(data.quantity),
-        minimumQuantity: Number.parseInt(data.minimumQuantity),
-        paidPrice: data.paidPrice,
-        sellingPrice: data.sellingPrice
-    }
-    await api.put("/products/edit", productData)
+    // const productData = {
+    //     productId: data.productId,
+    //     name: data.name,
+    //     description: data.description,
+    //     quantity: Number.parseInt(data.quantity),
+    //     minimumQuantity: Number.parseInt(data.minimumQuantity),
+    //     paidPrice: data.paidPrice,
+    //     sellingPrice: data.sellingPrice
+    // }
+    await api.put("/products/edit", data)
     .then((response => {
         toast.success("Alterações feitas com sucesso!");
     }))

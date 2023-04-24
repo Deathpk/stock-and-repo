@@ -1,4 +1,3 @@
-import { NavBar } from '@/components/Navbar'
 import { useRef, useEffect, useContext } from 'react';
 import { Card } from '@/components/Card';
 import Head from 'next/head';
