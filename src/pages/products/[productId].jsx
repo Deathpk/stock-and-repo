@@ -5,7 +5,6 @@ import Head from "next/head";
 import { useContext } from "react";
 
 export default function ProductDetails ({ details }) {
-    console.log(details);
     const navbarTitleContext = useContext(NavbarTitleContext);
     navbarTitleContext.updateNavbarTitle("Detalhes do produto");
 
@@ -19,7 +18,10 @@ export default function ProductDetails ({ details }) {
                 <div>
                     <div className="text-2xl pt-5">Marca: {details.brand.name}</div>
                     <div className="text-2xl py-2">Categoria: {details.category.name}</div>
-                    <div className="py-5 text-2xl">Descrição: {details.description}</div>
+                    {
+                        details.description &&
+                        <div className="py-5 text-2xl">Descrição: {details.description}</div> 
+                    }
                     <div className="text-2xl py-2">Quantidade em estoque: {details.quantity}</div>
                     <div className="text-2xl py-2">Quantidade mínima para reposição: {details.minimum_quantity}</div>
                     <div className="text-2xl py-2">Preço de custo: {details.paid_price} $</div>
@@ -34,7 +36,6 @@ export const getServerSideProps = isAuthenticatedSSR(async (context) => {
     const { params } = context;
     const apiClient = setupAPIClient(context);
     const response = await apiClient.get(`/products/${params.productId}`);
-    console.log(response);
     return {
        props: { details: response.data.product }
     }

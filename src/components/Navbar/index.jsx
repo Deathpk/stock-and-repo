@@ -77,12 +77,11 @@ export default function NavBar() {
                         </li>
 
                         <li onClick={() => {setShowDropdownOptions(!showDropdownOptions)}}>
-                            <Link
-                                href=""
+                            <button
                                 className=" hover:bg-gray-700 hover:text-white text-gray-400 px-3 py-2 rounded-md text-sm font-medium"
                             >
                                 Produtos
-                            </Link>
+                            </button>
                             {/* <!-- Dropdown menu --> */}
                             <div id="dropdown" className={`${showDropdownOptions ? '' : 'hidden'} z-10 absolute mt-4 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}>
                               <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">

@@ -1,7 +1,7 @@
 import { api } from "./apiClient";
 import { toast } from "react-toastify";
 
-export async function getProducts () {
+export async function getProducts() {
     try {
         const response = await api.get("products/");
         return {
@@ -12,6 +12,20 @@ export async function getProducts () {
     } catch(error) {
         console.log(error);
     }
+}
+
+export async function deleteProduct(targetId) {
+    try {
+        await api.delete("products/delete",{
+            params: {
+                productId: targetId,
+                isExternal: 0
+            }
+        });
+    } catch(error) {
+        console.log(error);
+    }
+
 }
 
 export async function getSpecificProduct(productId, setProductData, setProcessingRequest) {
