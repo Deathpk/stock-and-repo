@@ -1,19 +1,12 @@
-import { api } from "./api";
-import { toast } from "react-toastify";
+import { api } from "./apiClient";
 
-export function categoryAutocomplete(input) {
-    api().get(`categories/autocomplete?input=${input}`)
-    .then((response => {
-        const apiResponse = response.data;
-        return {
-            results: {
-                ... apiResponse.results
-            }
-        }
-    }))
-    .catch(error => {
+export async function categoryAutocomplete(input) {
+    try {
+        const {data} = await api.get(`categories/autocomplete?input=${input}`);
+        return data.results;
+    } catch(error) {
         console.log(error);
-    })
+    }
 }
 
 

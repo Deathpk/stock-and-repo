@@ -6,11 +6,9 @@ import Head from "next/head";
 import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
 import { Transition } from "@headlessui/react";
 import Modal from "@/components/Modal";
-import Pagination from "@/components/Pagination";
 import { deleteProduct } from "@/services/api/products"; 
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
-import { paginate } from "@/services/paginate";
 
 export default function ProductList ({ products }) {
     let router = useRouter();
@@ -43,9 +41,6 @@ export default function ProductList ({ products }) {
 
     const columnNamesMock = ['Id', 'Nome Produto', 'Marca', 'Categoria', 'Quantidade atual', 'Quantidade minima permitida em estoque', 'Preço de venda', 'Ações'];
     const [productData, setProductData] = useState(products || []);
-    const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 2;
-    // const paginatedProducts = paginate(currentPage, pageSize, productData.products);
 
     return (
         <>
@@ -69,12 +64,6 @@ export default function ProductList ({ products }) {
                     <title>Lista de produtos</title>
                 </Head>
                 <DataTable data={productData} columns={columnNamesMock} onDelete={handleDeletion} />
-                {/* <Pagination
-                items={...paginatedProducts}
-                pageSize={pageSize}
-                currentPage={currentPage}
-                onPageChange={() => {}} */}
-            {/* /> */}
             </div>
         </>
     );

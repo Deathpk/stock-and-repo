@@ -1,5 +1,7 @@
 import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
 import { createNewProduct } from "@/services/api/products";
+import { categoryAutocomplete } from "@/services/api/category";
+import { brandAutocomplete } from "@/services/api/brand";
 import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import { useContext, useRef, useState } from "react";
 import { toast } from "react-toastify";
@@ -14,21 +16,71 @@ export default function ProductCreate() {
     const paidPriceRef = useRef();
     const sellingPriceRef = useRef();
     const externalProductIdRef = useRef();
-    const [categoryName, setCategoryName] = useState();
-    const [brandName, setBrandName] = useState();
+    const [categoryName, setCategoryName] = useState('');
+    const [categoryResults, setCategoryResults] = useState([]);
+    const [brandName, setBrandName] = useState('');
+    const [brandResults, setBrandResults] = useState([]);
+
 
     function handleCategoryChange(event) {
-        //TODO QUANDO ADICIONAR O SEARCHABLE SELECT DESCOMENTAR E IMPLEMENTAR...
-        // const userInput = event.target.value;
-        // const autocompleteResult = categoryAutocomplete(userInput);
-        setCategoryName(event.target.value);
+        const userInput = event.target.value;
+        setCategoryName(userInput);
+        
+        setTimeout(async () => {
+            await handleCategoryAutoComplete(userInput);
+        }, 100);
     }
 
-    function handleBrandChange(event) {
-        //TODO QUANDO ADICIONAR O SEARCHABLE SELECT DESCOMENTAR E IMPLEMENTAR...
-        // const userInput = event.target.value;
-        // const autocompleteResult = brandAutocomplete(userInput);
-        setBrandName(event.target.value);
+    async function handleCategoryAutoComplete(userInput) {
+        let results;
+
+        if(userInput) {
+            results = await categoryAutocomplete(userInput);
+        }
+        
+        if(results) {
+            setCategoryResults(results.map((result) => {
+                return { name: result.name }
+            }));
+        } else {
+            setCategoryResults([]);
+        }
+    }
+
+
+    function handleCategoryAutoCompleteSelectionResult(categoryName) {
+        setCategoryName(categoryName);
+        setCategoryResults([]);
+    }
+
+    async function handleBrandChange(event) {
+        const userInput = event.target.value;
+        setBrandName(userInput);
+        
+        setTimeout(async () => {
+            await handleBrandAutoComplete(userInput);
+        }, 100);
+    }
+
+    async function handleBrandAutoComplete(userInput) {
+        let results;
+
+        if(userInput) {
+            results = await brandAutocomplete(userInput);
+        }
+        
+        if(results) {
+            setBrandResults(results.map((result) => {
+                return { name: result.name }
+            }));
+        } else {
+            setBrandResults([]);
+        }
+    }
+
+    function handleBrandAutoCompleteSelectionResult(brandName) {
+        setBrandName(brandName);
+        setBrandResults([]);
     }
 
     function submitHandler(event) {
@@ -76,6 +128,104 @@ export default function ProductCreate() {
                                 className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
                             />
                         </div>
+
+                        <div className="mb-2">
+                            <label
+                                htmlFor="category"
+                                className="block text-sm font-semibold text-gray-800 mb-2"
+                            >
+                                Categoria
+                            </label>
+                            {/* <SearchableSelect /> */}
+                            <div className="relative z-10">
+                                <input
+                                    type="text"
+                                    onChange={handleCategoryChange}
+                                    id="category"
+                                    required
+                                    value={categoryName}
+                                    className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                                />
+                                {
+                                    // TODO EXTRAIR PARA COMPONENTE.
+                                    categoryResults && 
+                                    <div className="absolute mt-1 w-full bg-white overflow-y-scroll">
+                                        {
+                                            categoryResults.map((searchResult, index) => {
+                                                return(
+                                                    <div 
+                                                        key={index}
+                                                        className="
+                                                        cursor-pointer
+                                                        text-black 
+                                                        text-center 
+                                                        mt-1 mb-1
+                                                        py-2 
+                                                        w-full
+                                                        bg-white 
+                                                        border-b-2
+                                                        max-h-56 
+                                                        " 
+                                                        onClick={() => {handleCategoryAutoCompleteSelectionResult(searchResult.name)}}
+                                                    >
+                                                        {searchResult.name}
+                                                    </div>
+                                                )
+                                            })
+                                        }
+                                    </div>                                    
+                                }
+                            </div>
+
+                        </div> 
+
+                        <div className="mb-2 mt-5">
+                            <label
+                                htmlFor="brand"
+                                className="block text-sm font-semibold text-gray-800"
+                            >
+                                Marca
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    onChange={handleBrandChange}
+                                    id="brand"
+                                    required
+                                    value={brandName}
+                                    className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                                />
+                                {
+                                    // TODO EXTRAIR PARA COMPONENTE.
+                                    brandResults && 
+                                    <div className="absolute mt-1 w-full bg-white overflow-y-scroll">
+                                        {
+                                            brandResults.map((searchResult, index) => {
+                                                return(
+                                                    <div 
+                                                        key={index}
+                                                        className="
+                                                        cursor-pointer 
+                                                        text-black 
+                                                        text-center 
+                                                        mt-1 mb-1
+                                                        py-2 
+                                                        w-full
+                                                        bg-white 
+                                                        border-b-2
+                                                        max-h-56 
+                                                        " 
+                                                        onClick={() => {handleBrandAutoCompleteSelectionResult(searchResult.name)}}
+                                                    >
+                                                        {searchResult.name}
+                                                    </div>
+                                                )
+                                            })
+                                        }
+                                    </div>                                    
+                                }
+                            </div>
+                        </div> 
 
                         <div className="mb-2">
                             <label
@@ -155,41 +305,6 @@ export default function ProductCreate() {
                                 className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
                             />
                         </div>
-
-                        <div className="mb-2">
-                            <label
-                                htmlFor="category"
-                                className="block text-sm font-semibold text-gray-800 mb-2"
-                            >
-                                Categoria
-                            </label>
-                            {/* <SearchableSelect /> */}
-                            <input
-                                type="text"
-                                onChange={handleCategoryChange}
-                                id="category"
-                                required
-                                value={categoryName}
-                                className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                            />
-                        </div>
-
-                        <div className="mb-2">
-                            <label
-                                htmlFor="brand"
-                                className="block text-sm font-semibold text-gray-800"
-                            >
-                                Marca
-                            </label>
-                            <input
-                                type="text"
-                                onChange={handleBrandChange}
-                                id="brand"
-                                required
-                                value={brandName}
-                                className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                            />
-                        </div>  
 
                         <div className="mb-2">
                             <label
