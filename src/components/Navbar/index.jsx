@@ -10,6 +10,10 @@ import { Transition } from "@headlessui/react";
 export default function NavBar() {
     const { isAuthenticated } = useContext(AuthContext);
     const navbarTitleContext = useContext(NavbarTitleContext);
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef();
+    const [showDropdownOptions, setShowDropdownOptions] = useState(false);
+    const [showStockControlOptions, setShowStockControlOptions] = useState(false);
 
     function getNavbarTitle() {
       return(
@@ -25,11 +29,20 @@ export default function NavBar() {
         </>
       );
     }
-    
-    const [isOpen, setIsOpen] = useState(false);
-    const ref = useRef();
-    const [showDropdownOptions, setShowDropdownOptions] = useState(false);
-    const [showStockControlOptions, setShowStockControlOptions] = useState(false);
+
+    function handleStockControlDropDown() {
+      setShowStockControlOptions(!showStockControlOptions);
+      if(showDropdownOptions) {
+        setShowDropdownOptions(false);
+      }
+    }
+
+    function handleProductDropDown() {
+      setShowDropdownOptions(!showDropdownOptions);
+      if(showStockControlOptions) {
+        setShowStockControlOptions(false);
+      }
+    }
   
     return (
       <div>
@@ -76,15 +89,15 @@ export default function NavBar() {
                             </a>
                         </li>
 
-                        <li onClick={() => {setShowDropdownOptions(!showDropdownOptions)}}>
+                        <li onClick={handleProductDropDown}>
                             <button
-                                className=" hover:bg-gray-700 hover:text-white text-gray-400 px-3 py-2 rounded-md text-sm font-medium"
+                                className=" hover:bg-gray-700 hover:text-white text-gray-400 px-3 py-2  rounded-md text-sm font-medium"
                             >
                                 Produtos
                             </button>
                             {/* <!-- Dropdown menu --> */}
                             <div id="dropdown" className={`${showDropdownOptions ? '' : 'hidden'} z-10 absolute mt-4 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}>
-                              <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+                              <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
                                   <li>
                                       <Link href="/products" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Produtos Cadastrados</Link>
                                   </li>
@@ -96,7 +109,7 @@ export default function NavBar() {
                         </li>
 
 
-                        <li onClick={() => {setShowStockControlOptions(!showStockControlOptions)}}>
+                        <li onClick={handleStockControlDropDown}>
                             <Link
                                 href=""
                                 className=" hover:bg-gray-700 hover:text-white text-gray-400 px-3 py-2 rounded-md text-sm font-medium"
@@ -105,7 +118,7 @@ export default function NavBar() {
                             </Link>
                                 {/* <!-- Dropdown menu --> */}
                             <div id="dropdown" className={`${showStockControlOptions ? '' : 'hidden'} z-10 absolute mt-4 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}>
-                                <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+                                <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
                                     <li>
                                         <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lançar venda</Link>
                                     </li>

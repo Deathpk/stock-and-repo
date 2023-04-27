@@ -4,6 +4,7 @@ import { categoryAutocomplete } from "@/services/api/category";
 import { brandAutocomplete } from "@/services/api/brand";
 import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import { useContext, useRef, useState } from "react";
+import SearchAbleSelect from "@/components/SearchAbleSelect";
 import { toast } from "react-toastify";
 
 export default function ProductCreate() {
@@ -136,95 +137,31 @@ export default function ProductCreate() {
                             >
                                 Categoria
                             </label>
-                            {/* <SearchableSelect /> */}
-                            <div className="relative z-10">
-                                <input
-                                    type="text"
-                                    onChange={handleCategoryChange}
-                                    id="category"
-                                    required
-                                    value={categoryName}
-                                    className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                                />
-                                {
-                                    // TODO EXTRAIR PARA COMPONENTE.
-                                    categoryResults && 
-                                    <div className="absolute mt-1 w-full bg-white overflow-y-scroll">
-                                        {
-                                            categoryResults.map((searchResult, index) => {
-                                                return(
-                                                    <div 
-                                                        key={index}
-                                                        className="
-                                                        cursor-pointer
-                                                        text-black 
-                                                        text-center 
-                                                        mt-1 mb-1
-                                                        py-2 
-                                                        w-full
-                                                        bg-white 
-                                                        border-b-2
-                                                        max-h-56 
-                                                        " 
-                                                        onClick={() => {handleCategoryAutoCompleteSelectionResult(searchResult.name)}}
-                                                    >
-                                                        {searchResult.name}
-                                                    </div>
-                                                )
-                                            })
-                                        }
-                                    </div>                                    
-                                }
-                            </div>
-
+                            <SearchAbleSelect 
+                                onChange={handleCategoryChange}
+                                idForLabel="category"
+                                isRequired={true}
+                                value={categoryName}
+                                searchResults={categoryResults}
+                                onOptionSelect={handleCategoryAutoCompleteSelectionResult}
+                            />
                         </div> 
 
-                        <div className="mb-2 mt-5">
+                        <div className="mb-2 mt-1">
                             <label
                                 htmlFor="brand"
                                 className="block text-sm font-semibold text-gray-800"
                             >
                                 Marca
                             </label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    onChange={handleBrandChange}
-                                    id="brand"
-                                    required
-                                    value={brandName}
-                                    className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                                />
-                                {
-                                    // TODO EXTRAIR PARA COMPONENTE.
-                                    brandResults && 
-                                    <div className="absolute mt-1 w-full bg-white overflow-y-scroll">
-                                        {
-                                            brandResults.map((searchResult, index) => {
-                                                return(
-                                                    <div 
-                                                        key={index}
-                                                        className="
-                                                        cursor-pointer 
-                                                        text-black 
-                                                        text-center 
-                                                        mt-1 mb-1
-                                                        py-2 
-                                                        w-full
-                                                        bg-white 
-                                                        border-b-2
-                                                        max-h-56 
-                                                        " 
-                                                        onClick={() => {handleBrandAutoCompleteSelectionResult(searchResult.name)}}
-                                                    >
-                                                        {searchResult.name}
-                                                    </div>
-                                                )
-                                            })
-                                        }
-                                    </div>                                    
-                                }
-                            </div>
+                            <SearchAbleSelect 
+                                onChange={handleBrandChange}
+                                idForLabel="brand"
+                                isRequired={true}
+                                value={brandName}
+                                searchResults={brandResults}
+                                onOptionSelect={handleBrandAutoCompleteSelectionResult}
+                            />
                         </div> 
 
                         <div className="mb-2">
