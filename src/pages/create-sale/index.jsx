@@ -1,11 +1,12 @@
 import SearchAbleSelect from "@/components/SearchAbleSelect";
 import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
 import { setupAPIClient } from "@/services/api/api";
-import { productAutocomplete } from "@/services/api/products";
+import { productAutocomplete, removeSoldProducts } from "@/services/api/products";
 import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import convert from "@/utils/moneyMask";
 import Head from "next/head";
 import { useContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function CreateSale() {
     const navbarTitleContext = useContext(NavbarTitleContext);
@@ -14,14 +15,30 @@ export default function CreateSale() {
     const [productsSearchResult, setProductsSearchResult] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [totalOnCart, setTotalOnCart] = useState(0);
+    const [processingRequest, setProcessingRequest] = useState(false);
 
     useEffect(()=> {
         updateTotalValue();
     }, [selectedProducts])
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
         event.preventDefault();
-        //todo
+        const soldProducts = selectedProducts.map((soldProduct) => {
+            return {
+                productId: soldProduct.id,
+                soldQuantity: soldProduct.qtd
+            }
+        });
+        setProcessingRequest(true);
+        await removeSoldProducts(soldProducts);
+        toast.success("Venda lançada com sucesso!");
+        resetFormStates();
+        setProcessingRequest(false);
+    }
+
+    function resetFormStates() {
+        setProductIdentification('');
+        setSelectedProducts([]);
     }
 
     function handleProductInput(event) {
@@ -47,6 +64,7 @@ export default function CreateSale() {
                     name: result.name,
                     external_product_id: result.external_product_id,
                     qtd: 1,
+                    available_quantity: result.quantity,
                     selling_price: result.selling_price
                 }
             }));
@@ -56,6 +74,11 @@ export default function CreateSale() {
     }
 
     function handleProductAutoCompleteResultSelection(product) {
+        if(product.available_quantity === 0) {
+            toast.warning("O produto escolhido não possui unidades suficientes para venda.");
+            return;
+        }
+
         setSelectedProducts((previousSelectedProducts) => {
             const hasAlreadyBeenAdded = previousSelectedProducts.find((addedProduct) => addedProduct.id === product.id);
             if(hasAlreadyBeenAdded) {
@@ -68,6 +91,17 @@ export default function CreateSale() {
         setProductsSearchResult([]);
     }
 
+    function productHasEnoughQuantityForSelling(id, quantityForValidation = 1) {
+        const canProceedWithSale = selectedProducts.some(product => product.id === id && quantityForValidation <= product.available_quantity);
+        
+        if(!canProceedWithSale) {
+            toast.warning("O produto escolhido não possui unidades suficientes para venda.");
+            return false;
+        }
+
+        return true;
+    }
+
     function updateSelectedProductQuantity(id, action) {
         if(action === 'decrease') {
             let shouldRemove = selectedProducts.some(item => item.id === id && item.qtd === 1);
@@ -77,6 +111,11 @@ export default function CreateSale() {
                 });
                 return;
             }
+        }
+
+        const currentProduct = selectedProducts.find(product => product.id === id);
+        if( action === 'increase' && !productHasEnoughQuantityForSelling(id, currentProduct.qtd +1)) {
+            return;
         }
 
         setSelectedProducts(selectedProducts =>
@@ -127,7 +166,7 @@ export default function CreateSale() {
                     <title>Lançar venda</title>
                 </Head>
                 <div className="w-full p-6 m-auto bg-white rounded-md shadow-md lg:max-w-5xl">
-                    <form className="mt-2" onSubmit={() => {}}>
+                    <form className="mt-2" onSubmit={ handleSubmit }>
 
                         <div className="mb-2">
                             <label
@@ -139,7 +178,7 @@ export default function CreateSale() {
                             <SearchAbleSelect 
                                 onChange={handleProductInput}
                                 idForLabel="productIdentification"
-                                isRequired={true}
+                                isRequired={false}
                                 value={productIdentification}
                                 searchResults={productsSearchResult}
                                 onOptionSelect={handleProductAutoCompleteResultSelection}
@@ -156,9 +195,16 @@ export default function CreateSale() {
                         
                         <div className="mt-6">
                             <button
-                            type="submit" 
-                            className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600">
-                                Lançar venda
+                            type="submit"
+                            disabled={processingRequest || selectedProducts.length === 0 } 
+                            className="w-full px-4 py-2 
+                                tracking-wide text-white 
+                                transition-colors duration-200 
+                                transform bg-purple-700 rounded-md 
+                                hover:bg-purple-600 
+                                focus:outline-none focus:bg-purple-600
+                                disabled:bg-slate-400">
+                                { processingRequest ? 'Aguarda enquanto lançamos a venda...' : 'Lançar venda' }
                             </button>
                         </div>
                     </form>

@@ -36,7 +36,17 @@ export async function productAutocomplete (searchQuery) {
             }
         });
         return response.data.results;
-        
+
+    } catch(error) {
+        console.log(error);
+    }
+}
+
+export async function removeSoldProducts(soldProducts) {
+    try {
+        await api.post("sales/sell",{
+            soldProducts: soldProducts
+        });
     } catch(error) {
         console.log(error);
     }
