@@ -8,7 +8,7 @@ import Head from "next/head";
 import { Transition } from "@headlessui/react";
 
 export default function NavBar() {
-    const { isAuthenticated } = useContext(AuthContext);
+    const { isAuthenticated, signOut } = useContext(AuthContext);
     const navbarTitleContext = useContext(NavbarTitleContext);
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef();
@@ -30,6 +30,10 @@ export default function NavBar() {
       );
     }
 
+    function handleSignOut() {
+      signOut();
+    }
+
     function handleStockControlDropDown() {
       setShowStockControlOptions(!showStockControlOptions);
       if(showDropdownOptions) {
@@ -45,7 +49,7 @@ export default function NavBar() {
     }
   
     return (
-      <div>
+      <div className={`${isAuthenticated ? '' : 'hidden'}`}>
         <Head>
           <title>Cadastrar produto</title>
         </Head>
@@ -110,17 +114,16 @@ export default function NavBar() {
 
 
                         <li onClick={handleStockControlDropDown}>
-                            <Link
-                                href=""
+                            <button
                                 className=" hover:bg-gray-700 hover:text-white text-gray-400 px-3 py-2 rounded-md text-sm font-medium"
                             >
-                                Controle de estoque
-                            </Link>
+                                Lançamentos
+                            </button>
                                 {/* <!-- Dropdown menu --> */}
                             <div id="dropdown" className={`${showStockControlOptions ? '' : 'hidden'} z-10 absolute mt-4 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}>
                                 <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
                                     <li>
-                                        <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lançar venda</Link>
+                                        <Link href="/create-sale" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lançar venda</Link>
                                     </li>
                                     <li>
                                         <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Dar baixa em produto</Link>
@@ -167,13 +170,12 @@ export default function NavBar() {
                         </li>
                         {
                           isAuthenticated ?
-                          <li onClick={() => {}}>
-                            <Link
-                                href="#"
+                          <li onClick={handleSignOut}>
+                            <button
                                 className=" hover:bg-gray-700 hover:text-white text-gray-400 px-3 py-2 rounded-md text-sm font-medium"
                             >
                                 Logout
-                            </Link>
+                            </button>
                           </li>
                           : <li></li>
                         }
@@ -320,13 +322,12 @@ export default function NavBar() {
                       </Link>
                       {
                         isAuthenticated ?
-                        <li onClick={() => {}}>
-                            <Link
-                                href="#"
+                        <li onClick={() => {handleSignOut}}>
+                            <button
                                 className=" hover:bg-gray-700 hover:text-white text-gray-400 px-3 py-2 rounded-md text-sm font-medium"
                             >
                                 Logout
-                            </Link>
+                            </button>
                         </li>
                         : <li></li>
                       }

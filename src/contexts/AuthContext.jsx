@@ -10,15 +10,16 @@ export const AuthContext = createContext({
     isAuthenticated: false,
     signUp: (credentials) => {},
     signIn: (credentials) => {},
-    singOut: (credentials) => {},
+    signOut: () => {},
     forgotPassword: (recoveryEmail) => {},
     changePassword: (newPasswordData) => {},
     inviteEmployee: (employeeData) => {},
     confirmPasswordRecovery: (randomPassword) => {},
 });
 
-export function signOut() {
+export async function signOut() {
     try {
+        await api.post('auth/logout');
         destroyCookie(undefined, '@stock_and_repo.token');
         Router.push('/');
     } catch(error) {
@@ -29,7 +30,7 @@ export function signOut() {
 
 export function AuthProvider ({ children }) {
     const [user, setUser] = useState();
-    const isAuthenticated = !!user; // convertendo para bool.
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const cookieExpirationTime = 60 * 60 * 24 * 30; // 1 Mês
 
     useEffect(() => {
@@ -39,6 +40,7 @@ export function AuthProvider ({ children }) {
             api.get('auth/me')
             .then(response => {
                 setUser(response.data);
+                setIsAuthenticated(true);
             }).catch((error) => {
                 signOut();
             });
@@ -61,6 +63,7 @@ export function AuthProvider ({ children }) {
             });
 
             setUser(response.data.user);
+            setIsAuthenticated(true);
             //Passar para as proximas requisições o nosso token.
             api.defaults.headers['Authorization'] = `Bearer ${token}`;
             toast.success("Login efetuado com sucesso!");

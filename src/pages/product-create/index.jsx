@@ -49,8 +49,8 @@ export default function ProductCreate() {
     }
 
 
-    function handleCategoryAutoCompleteSelectionResult(categoryName) {
-        setCategoryName(categoryName);
+    function handleCategoryAutoCompleteSelectionResult(category) {
+        setCategoryName(category.name);
         setCategoryResults([]);
     }
 
@@ -79,8 +79,8 @@ export default function ProductCreate() {
         }
     }
 
-    function handleBrandAutoCompleteSelectionResult(brandName) {
-        setBrandName(brandName);
+    function handleBrandAutoCompleteSelectionResult(brand) {
+        setBrandName(brand.name);
         setBrandResults([]);
     }
 

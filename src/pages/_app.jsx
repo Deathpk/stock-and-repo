@@ -1,14 +1,14 @@
 import '@/styles/globals.css'
 import { ToastContainer } from "react-toastify";
-import { AuthProvider } from '@/contexts/AuthContext';
-import Layout from '@/components/Layout';
+import { AuthContext, AuthProvider } from '@/contexts/AuthContext';
 import 'react-toastify/dist/ReactToastify.css';
 import NavBar from '@/components/Navbar';
 import { NavbarTitleContextProvider } from '@/contexts/NavbarTitleContext';
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 export default function App({ Component, pageProps }) {
   const [navbarTitle, setNavbarTitle] = useState('');
+  const { isAuthenticated } = useContext(AuthContext);
 
   return(
     <>

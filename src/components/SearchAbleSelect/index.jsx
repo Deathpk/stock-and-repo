@@ -25,7 +25,7 @@ export default function SearchAbleSelect ({ onChange, idForLabel, isRequired, va
                                     bg-white 
                                     border-b-2
                                     " 
-                                    onClick={() => {onOptionSelect(searchResult.name)}}
+                                    onClick={() => {onOptionSelect(searchResult)}}
                                 >
                                     {searchResult.name}
                                 </div>

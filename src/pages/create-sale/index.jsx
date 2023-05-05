@@ -1,0 +1,174 @@
+import SearchAbleSelect from "@/components/SearchAbleSelect";
+import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
+import { setupAPIClient } from "@/services/api/api";
+import { productAutocomplete } from "@/services/api/products";
+import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
+import convert from "@/utils/moneyMask";
+import Head from "next/head";
+import { useContext, useEffect, useState } from "react";
+
+export default function CreateSale() {
+    const navbarTitleContext = useContext(NavbarTitleContext);
+    navbarTitleContext.updateNavbarTitle("Lançar venda");
+    const [productIdentification, setProductIdentification] = useState('');
+    const [productsSearchResult, setProductsSearchResult] = useState([]);
+    const [selectedProducts, setSelectedProducts] = useState([]);
+    const [totalOnCart, setTotalOnCart] = useState(0);
+
+    useEffect(()=> {
+        updateTotalValue();
+    }, [selectedProducts])
+
+    function handleSubmit(event) {
+        event.preventDefault();
+        //todo
+    }
+
+    function handleProductInput(event) {
+        const userInput = event.target.value;
+        setProductIdentification(userInput);
+        
+        setTimeout(async () => {
+            await handleProductAutoComplete(userInput);
+        }, 100);
+    }
+
+    async function handleProductAutoComplete(userInput) {
+        let results;
+
+        if(userInput) {
+            results = await productAutocomplete(userInput);
+        }
+        
+        if(results) {
+            setProductsSearchResult(results.map((result) => {
+                return {
+                    id: result.id, 
+                    name: result.name,
+                    external_product_id: result.external_product_id,
+                    qtd: 1,
+                    selling_price: result.selling_price
+                }
+            }));
+        } else {
+            setProductsSearchResult([]);
+        }
+    }
+
+    function handleProductAutoCompleteResultSelection(product) {
+        setSelectedProducts((previousSelectedProducts) => {
+            const hasAlreadyBeenAdded = previousSelectedProducts.find((addedProduct) => addedProduct.id === product.id);
+            if(hasAlreadyBeenAdded) {
+                return previousSelectedProducts;
+            }
+
+            return previousSelectedProducts.concat(product);
+        });
+        setProductIdentification('');
+        setProductsSearchResult([]);
+    }
+
+    function updateSelectedProductQuantity(id, action) {
+        if(action === 'decrease') {
+            let shouldRemove = selectedProducts.some(item => item.id === id && item.qtd === 1);
+            if(shouldRemove) {
+                setSelectedProducts(selectedProducts => {
+                    return selectedProducts.filter(item => item.id !== id);
+                });
+                return;
+            }
+        }
+
+        setSelectedProducts(selectedProducts =>
+            selectedProducts.map(product => {
+                if(product.id === id) {
+                    return { 
+                        ...product, 
+                        qtd: action === 'increase' 
+                        ? product.qtd +1 
+                        : product.qtd -1 
+                    };
+                }
+                return product;
+            })
+        )
+    }
+
+    function updateTotalValue() {
+        let total = 0;
+        selectedProducts.forEach(item => total += item.selling_price * item.qtd);
+        setTotalOnCart(total);
+    }
+
+    function resolveSelectedProductsTable() {
+        if(selectedProducts.length > 0) {
+            return selectedProducts.map((selectedProduct, index) => {
+                return (
+                    <li className="bg-slate-400 my-4 px-2 h-full">
+                        <li>ID: {selectedProduct.id}</li>
+                        <li>ID Externo: {selectedProduct.external_product_id}</li>
+                        <li>Produto: {selectedProduct.name}</li>
+                        <li> Qtd: {selectedProduct.qtd}
+                         <span className="cursor-pointer" onClick={() => updateSelectedProductQuantity(selectedProduct.id, 'increase')}> + </span>
+                         <span className="cursor-pointer" onClick={() => updateSelectedProductQuantity(selectedProduct.id, 'decrease')}> - </span>
+                        </li>
+                        <li>Preço unitário: {convert(selectedProduct.selling_price)}</li>
+                    </li>
+                )
+            })
+        }
+
+        return <li className="my-4 px-2 text-center text-2xl">Nenhum produto adicionado ainda...</li>
+    }
+
+    return(
+            <div className="relative flex flex-col justify-center min-h-screen overflow-hidden py-2">
+                <Head>
+                    <title>Lançar venda</title>
+                </Head>
+                <div className="w-full p-6 m-auto bg-white rounded-md shadow-md lg:max-w-5xl">
+                    <form className="mt-2" onSubmit={() => {}}>
+
+                        <div className="mb-2">
+                            <label
+                                htmlFor="productIdentification"
+                                className="block text-sm font-semibold text-gray-800 mb-2"
+                            >
+                                Insira a identificação ou nome do produto
+                            </label>
+                            <SearchAbleSelect 
+                                onChange={handleProductInput}
+                                idForLabel="productIdentification"
+                                isRequired={true}
+                                value={productIdentification}
+                                searchResults={productsSearchResult}
+                                onOptionSelect={handleProductAutoCompleteResultSelection}
+                            />
+                        </div> 
+
+                        <div className="w-full bg-slate-200">
+                            <h1 className="text-center text-2xl">Produtos adicionados</h1>
+                            <ul className="flex-col py-2 mx-5">
+                                { resolveSelectedProductsTable() }
+                                <span className="flex justify-end">Total: {convert(totalOnCart)}</span> 
+                            </ul>
+                        </div>
+                        
+                        <div className="mt-6">
+                            <button
+                            type="submit" 
+                            className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600">
+                                Lançar venda
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+    );
+}
+
+export const getServerSideProps = isAuthenticatedSSR(async (context) => {
+    return {
+        props: {}
+    }
+});

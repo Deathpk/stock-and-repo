@@ -28,6 +28,20 @@ export async function deleteProduct(targetId) {
 
 }
 
+export async function productAutocomplete (searchQuery) {
+    try {
+        const response = await api.get("products/autocomplete",{
+            params: {
+                input: searchQuery
+            }
+        });
+        return response.data.results;
+        
+    } catch(error) {
+        console.log(error);
+    }
+}
+
 export async function getSpecificProduct(productId, setProductData, setProcessingRequest) {
     await api.get(`products/${productId}`)
     .then(response => {
