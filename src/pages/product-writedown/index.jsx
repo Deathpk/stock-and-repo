@@ -1,37 +1,32 @@
 import SearchAbleSelect from "@/components/SearchAbleSelect";
 import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
-import { setupAPIClient } from "@/services/api/api";
-import { productAutocomplete, removeSoldProducts } from "@/services/api/products";
+import { productAutocomplete, productWriteDown } from "@/services/api/products";
 import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import convert from "@/utils/moneyMask";
 import Head from "next/head";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { toast } from "react-toastify";
 
-export default function CreateSale() {
+export default function ProductWritedown () {
     const navbarTitleContext = useContext(NavbarTitleContext);
-    navbarTitleContext.updateNavbarTitle("Lançar venda");
+    navbarTitleContext.updateNavbarTitle("Lançar baixa de estoque");
     const [productIdentification, setProductIdentification] = useState('');
     const [productsSearchResult, setProductsSearchResult] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
-    const [totalOnCart, setTotalOnCart] = useState(0);
     const [processingRequest, setProcessingRequest] = useState(false);
-
-    useEffect(()=> {
-        updateTotalValue();
-    }, [selectedProducts])
 
     async function handleSubmit(event) {
         event.preventDefault();
-        const soldProducts = selectedProducts.map((soldProduct) => {
+        const products = selectedProducts.map((product) => {
             return {
-                productId: soldProduct.id,
-                soldQuantity: soldProduct.qtd
+                productId: product.id,
+                quantityToRemove: product.qtd
             }
         });
         setProcessingRequest(true);
-        await removeSoldProducts(soldProducts);
-        toast.success("Venda lançada com sucesso!");
+        await productWriteDown(products);
+
+        toast.success("Baixa de estoque registrada com sucesso!");
         resetFormStates();
         setProcessingRequest(false);
     }
@@ -75,7 +70,7 @@ export default function CreateSale() {
 
     function handleProductAutoCompleteResultSelection(product) {
         if(product.available_quantity === 0) {
-            toast.warning("O produto escolhido não possui unidades suficientes para venda.");
+            toast.warning("O produto escolhido não possui unidades suficientes para baixa.");
             return;
         }
 
@@ -91,11 +86,11 @@ export default function CreateSale() {
         setProductsSearchResult([]);
     }
 
-    function productHasEnoughQuantityForSelling(id, quantityForValidation = 1) {
-        const canProceedWithSale = selectedProducts.some(product => product.id === id && quantityForValidation <= product.available_quantity);
+    function productHasEnoughQuantityForWritedown(id, quantityForValidation = 1) {
+        const canProceedWithWritedown = selectedProducts.some(product => product.id === id && quantityForValidation <= product.available_quantity);
         
-        if(!canProceedWithSale) {
-            toast.warning("O produto escolhido não possui unidades suficientes para venda.");
+        if(!canProceedWithWritedown) {
+            toast.warning("O produto escolhido não possui unidades suficientes para dar baixa.");
             return false;
         }
 
@@ -114,7 +109,7 @@ export default function CreateSale() {
         }
 
         const currentProduct = selectedProducts.find(product => product.id === id);
-        if( action === 'increase' && !productHasEnoughQuantityForSelling(id, currentProduct.qtd +1)) {
+        if( action === 'increase' && !productHasEnoughQuantityForWritedown(id, currentProduct.qtd +1)) {
             return;
         }
 
@@ -133,25 +128,19 @@ export default function CreateSale() {
         )
     }
 
-    function updateTotalValue() {
-        let total = 0;
-        selectedProducts.forEach(item => total += item.selling_price * item.qtd);
-        setTotalOnCart(total);
-    }
-
     function resolveSelectedProductsTable() {
         if(selectedProducts.length > 0) {
             return selectedProducts.map((selectedProduct, index) => {
                 return (
-                    <li className="bg-slate-400 my-4 px-2 h-full flex flex-col">
-                        <span>ID: {selectedProduct.id}</span>
-                        <span>ID Externo: {selectedProduct.external_product_id}</span>
-                        <span>Produto: {selectedProduct.name}</span>
-                        <span> Qtd: {selectedProduct.qtd}
-                            <span className="cursor-pointer" onClick={() => updateSelectedProductQuantity(selectedProduct.id, 'increase')}> + </span>
-                            <span className="cursor-pointer" onClick={() => updateSelectedProductQuantity(selectedProduct.id, 'decrease')}> - </span>
-                        </span>
-                        <span>Preço unitário: {convert(selectedProduct.selling_price)}</span>
+                    <li className="bg-slate-400 my-4 px-2 h-full">
+                        <li>ID: {selectedProduct.id}</li>
+                        <li>ID Externo: {selectedProduct.external_product_id}</li>
+                        <li>Produto: {selectedProduct.name}</li>
+                        <li> Qtd: {selectedProduct.qtd}
+                         <span className="cursor-pointer" onClick={() => updateSelectedProductQuantity(selectedProduct.id, 'increase')}> + </span>
+                         <span className="cursor-pointer" onClick={() => updateSelectedProductQuantity(selectedProduct.id, 'decrease')}> - </span>
+                        </li>
+                        <li>Preço unitário: {convert(selectedProduct.selling_price)}</li>
                     </li>
                 )
             })
@@ -161,9 +150,9 @@ export default function CreateSale() {
     }
 
     return(
-            <div className="relative flex flex-col justify-center min-h-screen overflow-hidden py-2">
+        <div className="relative flex flex-col justify-center min-h-screen overflow-hidden py-2">
                 <Head>
-                    <title>Lançar venda</title>
+                    <title>Lançar baixa de estoque</title>
                 </Head>
                 <div className="w-full p-6 m-auto bg-white rounded-md shadow-md lg:max-w-5xl">
                     <form className="mt-2" onSubmit={ handleSubmit }>
@@ -181,16 +170,14 @@ export default function CreateSale() {
                                 isRequired={false}
                                 value={productIdentification}
                                 searchResults={productsSearchResult}
-                                displayableColumn="name"
                                 onOptionSelect={handleProductAutoCompleteResultSelection}
                             />
                         </div> 
 
                         <div className="w-full bg-slate-200">
-                            <h1 className="text-center text-2xl">Produtos adicionados</h1>
+                            <h1 className="text-center text-2xl">Produtos para baixa</h1>
                             <ul className="flex-col py-2 mx-5">
                                 { resolveSelectedProductsTable() }
-                                <span className="flex justify-end">Total: {convert(totalOnCart)}</span> 
                             </ul>
                         </div>
                         
@@ -205,7 +192,7 @@ export default function CreateSale() {
                                 hover:bg-purple-600 
                                 focus:outline-none focus:bg-purple-600
                                 disabled:bg-slate-400">
-                                { processingRequest ? 'Aguarda enquanto lançamos a venda...' : 'Lançar venda' }
+                                { processingRequest ? 'Aguarda enquanto lançamos as baixas...' : 'Lançar baixa' }
                             </button>
                         </div>
                     </form>

@@ -14,6 +14,7 @@ export default function NavBar() {
     const ref = useRef();
     const [showDropdownOptions, setShowDropdownOptions] = useState(false);
     const [showStockControlOptions, setShowStockControlOptions] = useState(false);
+    const [showReportsOptions, setShowReportsOptions] = useState(false);
 
     function getNavbarTitle() {
       return(
@@ -34,6 +35,7 @@ export default function NavBar() {
       signOut();
     }
 
+    //TODO ARRUMAR ESSA GAMBETA... ARRUMAR UMA FORMA DE SE UM MENU FOR ABERTO, FECHAR OS OUTROS.
     function handleStockControlDropDown() {
       setShowStockControlOptions(!showStockControlOptions);
       if(showDropdownOptions) {
@@ -46,6 +48,10 @@ export default function NavBar() {
       if(showStockControlOptions) {
         setShowStockControlOptions(false);
       }
+    }
+
+    function handleReportsDropDown() {
+      setShowReportsOptions(!showReportsOptions);
     }
   
     return (
@@ -126,7 +132,7 @@ export default function NavBar() {
                                         <Link href="/create-sale" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lançar venda</Link>
                                     </li>
                                     <li>
-                                        <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Dar baixa em produto</Link>
+                                        <Link href="/product-writedown" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lançar baixa de estoque</Link>
                                     </li>
                                 </ul>
                             </div>
@@ -142,13 +148,23 @@ export default function NavBar() {
                         </li>
 
 
-                        <li>
-                            <Link
-                                href="#"
+                        <li onClick={handleReportsDropDown}>
+                            <button
                                 className=" hover:bg-gray-700 hover:text-white text-gray-400 px-3 py-2 rounded-md text-sm font-medium"
                             >
                                 Relatórios
-                            </Link>
+                            </button>
+                                {/* <!-- Dropdown menu --> */}
+                            <div id="dropdown" className={`${showReportsOptions ? '' : 'hidden'} z-10 absolute mt-4 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}>
+                                <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
+                                    <li>
+                                        <Link href="/products/reports/sales" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Relatório de vendas</Link>
+                                    </li>
+                                    <li>
+                                        <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Produtos com mais saída</Link>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
 
                         <li>
@@ -288,7 +304,7 @@ export default function NavBar() {
                                           <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lançar venda</Link>
                                       </li>
                                       <li>
-                                          <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Dar baixa em produto</Link>
+                                          <Link href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lançar baixa de estoque</Link>
                                       </li>
                                   </ul>
                               </div>

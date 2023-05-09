@@ -1,4 +1,4 @@
-export default function SearchAbleSelect ({ onChange, idForLabel, isRequired, value, searchResults, onOptionSelect }) {
+export default function SearchAbleSelect ({ onChange, idForLabel, isRequired, value, searchResults, onOptionSelect, displayableColumn }) {
     return(
         <div className="relative z-10">
             <input
@@ -27,7 +27,7 @@ export default function SearchAbleSelect ({ onChange, idForLabel, isRequired, va
                                     " 
                                     onClick={() => {onOptionSelect(searchResult)}}
                                 >
-                                    {searchResult.name}
+                                    { searchResult[displayableColumn] }
                                 </div>
                             )
                         })

@@ -52,6 +52,16 @@ export async function removeSoldProducts(soldProducts) {
     }
 }
 
+export async function productWriteDown(products) {
+    try {
+        await api.post("products/remove-quantity",{
+            products: products
+        });
+    } catch(error) {
+        console.log(error);
+    }
+}
+
 export async function getSpecificProduct(productId, setProductData, setProcessingRequest) {
     await api.get(`products/${productId}`)
     .then(response => {

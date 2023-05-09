@@ -31,6 +31,15 @@ export default function ProductList ({ products }) {
         }
     }
 
+    function deleteModalBody() {
+        return(
+            <div className="flex justify-between px-24 py-3">
+                <button onClick={() => {deletionConfirmation(true)}} className="text-white bg-green-500 py-2 px-4 rounded-md">Sim</button>
+                <button onClick={() => {deletionConfirmation(false)}} className="text-white bg-red-600 py-2 px-4 rounded-md">Não</button>
+            </div>
+        );
+    }
+
     async function proceedWithDeletion() {
         await deleteProduct(productId);
         toast.success("Produto deletado com sucesso!");
@@ -55,7 +64,11 @@ export default function ProductList ({ products }) {
             >
                 {
                     showDeleteModal &&
-                    <Modal onResponse={deletionConfirmation} />
+                    <Modal 
+                        primaryMessage="Tem certeza que deseja apagar esse produto ?"
+                        secondaryMessage="Tenha em mente que essa ação não poderá ser desfeita."
+                        body={deleteModalBody} 
+                    />
                 }
             </Transition>
 
