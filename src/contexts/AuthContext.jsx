@@ -2,7 +2,7 @@ import Router from 'next/router';
 import { destroyCookie, parseCookies, setCookie } from 'nookies';
 import { createContext, useState, useEffect } from 'react';
 import { api } from '@/services/api/apiClient';
-import { toast } from 'react-toastify';
+import { SwalAlert } from '@/pages/_app';
 
 
 export const AuthContext = createContext({
@@ -66,22 +66,35 @@ export function AuthProvider ({ children }) {
             setIsAuthenticated(true);
             //Passar para as proximas requisições o nosso token.
             api.defaults.headers['Authorization'] = `Bearer ${token}`;
-            toast.success("Login efetuado com sucesso!");
+            SwalAlert.fire({
+                title: "Login efetuado com sucesso!",
+                icon: "success",
+                toast: true,
+                position: "top-right"
+            });
 
             Router.push('/dashboard');
         } catch(error) {
-            toast.error("Oops, ocorreu um erro ao logar, por favor, tente novamente.");
-            console.log("Erro ao acessar", error);
+            SwalAlert.fire({
+                title: error.response.data.message ?? "Oops, não foi possível efetuar o login, tente novamente.",
+                icon: "error"
+            });
         }
     }
 
     async function signUp(singnUpData) {
         try {
             await api.post('auth/register', singnUpData);
-            toast.success("Cadastro concluído com sucesso, por favor, faça o login para continuar.");
+            SwalAlert.fire({
+                title: "Cadastro concluído com sucesso, por favor, faça o login para continuar.",
+                icon: "success"
+            });
             Router.push('/');
         } catch(error) {
-            toast.error("Oops, ocorreu um erro ao se cadastrar, por favor, tente novamente.");
+            SwalAlert.fire({
+                title: "Oops, ocorreu um erro ao se cadastrar, por favor, tente novamente.",
+                icon: "error"
+            });
             console.log("Erro ao cadastrar um usuário", error);
         }
     }
@@ -90,15 +103,20 @@ export function AuthProvider ({ children }) {
         await api.post("auth/change-password", newPasswordData)
         .then(response => {
             if(response.data.success) {
-                toast.success("Senha alterada com sucesso, por favor, faça o login novamente.");
+                SwalAlert.fire({
+                    title: "Senha alterada com sucesso, por favor, faça o login novamente.",
+                    icon: "success"
+                });
                 signOut();
                 Router.push('/');
             }
         })
         .catch(error => {
             console.log(`Deu merda paizão! ${error}`)
-            toast.error("Ocorreu um erro ao alterar a senha do usuário, por favor, tente novamente.");
-            // navigate("/change-password");
+            SwalAlert.fire({
+                title: "Ocorreu um erro ao alterar a senha do usuário, por favor, tente novamente.",
+                icon: "error"
+            });
         });
     }
     
@@ -107,12 +125,17 @@ export function AuthProvider ({ children }) {
         .then(response => {
             console.log(response.data);
             if(response.data.success) {
-                toast.success("Convite enviado com sucesso!");
-                // navigate("/invite-employee")
+                SwalAlert.fire({
+                    title: "Convite enviado com sucesso!",
+                    icon: "success"
+                });
             }
         })
         .catch(error => {
-            toast.error("Ocorreu um erro ao convidar um funcionário, por favor, tente novamente!");
+            SwalAlert.fire({
+                title: "Ocorreu um erro ao convidar um funcionário, por favor, tente novamente!",
+                icon: "error"
+            });
         });
     }
     
@@ -121,12 +144,18 @@ export function AuthProvider ({ children }) {
         .then(response => {
             console.log(response.data);
             if(response.data.success) {
-                toast.success("Enviamos um e-mail com as instruções para recuperação.");
+                SwalAlert.fire({
+                    title: "Enviamos um e-mail com as instruções para recuperação.",
+                    icon: "success"
+                });
                 Router.push('/recover-password-confirmation');
             }
         })
         .catch(error => {
-            toast.error("Ocorreu um erro ao solicitar recuperação de senha, por favor, tente novamente!");
+            SwalAlert.fire({
+                title: "Ocorreu um erro ao solicitar recuperação de senha, por favor, tente novamente!",
+                icon: "error"
+            });
         });
     }
     
@@ -135,13 +164,19 @@ export function AuthProvider ({ children }) {
         .then(response => {
             console.log(response.data);
             if(response.data.success) {
-                toast.success("Senha alterada com sucesso!, por favor, faça o login novamente.");
+                SwalAlert.fire({
+                    title: "Senha alterada com sucesso!, por favor, faça o login novamente.",
+                    icon: "success"
+                });
                 Router.push('/');
             }
         })
         .catch(error => {
             console.log(error);
-            toast.error("Ocorreu um erro ao alterar senha, por favor, tente novamente!");
+            SwalAlert.fire({
+                title: "Ocorreu um erro ao alterar senha, por favor, tente novamente!",
+                icon: "error"
+            });
         });
     }
 

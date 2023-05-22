@@ -5,11 +5,13 @@ import { brandAutocomplete } from "@/services/api/brand";
 import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import { useContext, useRef, useState } from "react";
 import SearchAbleSelect from "@/components/SearchAbleSelect";
-import { toast } from "react-toastify";
+import { SwalAlert } from "../_app";
+import { useRouter } from "next/router";
 
 export default function ProductCreate() {
     const navbarTitleContext = useContext(NavbarTitleContext);
     navbarTitleContext.updateNavbarTitle("Cadastrar novo produto");
+    const router = useRouter();
     const nameRef = useRef();
     const descriptionRef = useRef();
     const quantityRef = useRef();
@@ -97,7 +99,14 @@ export default function ProductCreate() {
         }
         setOptionalFieldsIfRequired(productData);
         createNewProduct(productData);
-        toast.success("Produto cadastrado com sucesso!");
+        SwalAlert.fire({
+            title: "Produto cadastrado com sucesso!",
+            icon: "success"
+        });
+
+        setTimeout(() => {
+            router.push('/products');
+        },2000);
     }
 
     function setOptionalFieldsIfRequired(productData) {

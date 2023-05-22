@@ -3,10 +3,13 @@ import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import { setupAPIClient } from "@/services/api/api";
 import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
 import { editProduct } from "@/services/api/products";
+import { SwalAlert } from "../_app";
+import { useRouter } from "next/router";
 
 export default function ProductEdit({ product }) {
     const navbarTitleContext = useContext(NavbarTitleContext);
     navbarTitleContext.updateNavbarTitle("Editar produto");
+    let router = useRouter();
 
     const [name, setName] = useState(product.name);
     const [description, setDescription] = useState(product.description);
@@ -18,7 +21,7 @@ export default function ProductEdit({ product }) {
     const [minimumQuantity, setMinimumQuantity] = useState(product.minimum_quantity);
     const [externalProductId, setExternalProductId] = useState(product.external_product_id);
 
-     function submitHandler(event) {
+     async function submitHandler(event) {
         event.preventDefault();
         const data = {
             productId: product.id,
@@ -32,7 +35,14 @@ export default function ProductEdit({ product }) {
             minimumQuantity: minimumQuantity,
             externalProductId: externalProductId
         }
-        editProduct(data);
+        await editProduct(data);
+        SwalAlert.fire({
+            title: "Produto atualizado com sucesso!",
+            icon: "success"
+        });
+        setTimeout(() => {
+            router.push('/products');
+        },2000);
     }
 
     return(

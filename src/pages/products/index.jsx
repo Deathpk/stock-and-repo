@@ -7,42 +7,41 @@ import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
 import { Transition } from "@headlessui/react";
 import Modal from "@/components/Modal";
 import { deleteProduct } from "@/services/api/products"; 
-import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import DataTableRow from "@/components/DataTableRow";
+import { SwalAlert } from "../_app";
 
 export default function ProductList ({ products }) {
+    
     let router = useRouter();
     const navbarTitleContext = useContext(NavbarTitleContext);
     navbarTitleContext.updateNavbarTitle("Produtos Cadastrados");
-    
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [productId, setProductId] = useState();
 
     function handleDeletion(targetId) {
-        setProductId(targetId);
-        setShowDeleteModal(true);
+        SwalAlert.fire({
+            title: "Tem certeza que deseja apagar esse produto ?",
+            text: "Tenha em mente que essa ação não poderá ser desfeita.",
+            confirmButtonText: "Sim, remover produto",
+            confirmButtonColor: "green",
+            cancelButtonText: "Não, cancelar",
+            cancelButtonColor: "red",
+            showCancelButton: true,
+            reverseButtons: true
+        }).then(response => {
+            if(response.isConfirmed) {
+                proceedWithDeletion(targetId);
+            }
+        });
     }
 
-    function deletionConfirmation(response) {
-        setShowDeleteModal(false);
-        if(response) {
-            console.log(response);
-            proceedWithDeletion();
-        }
-    }
-
-    function deleteModalBody() {
-        return(
-            <div className="flex justify-between px-24 py-3">
-                <button onClick={() => {deletionConfirmation(true)}} className="text-white bg-green-500 py-2 px-4 rounded-md">Sim</button>
-                <button onClick={() => {deletionConfirmation(false)}} className="text-white bg-red-600 py-2 px-4 rounded-md">Não</button>
-            </div>
-        );
-    }
-
-    async function proceedWithDeletion() {
-        await deleteProduct(productId);
-        toast.success("Produto deletado com sucesso!");
+    async function proceedWithDeletion(targetId) {
+        await deleteProduct(targetId);
+        SwalAlert.fire({
+            title: "Produto deletado com sucesso!",
+            icon: "success",
+            timer: 3000
+        });
         setTimeout(() => {
             router.reload();
         },5000);
@@ -52,33 +51,22 @@ export default function ProductList ({ products }) {
     const [productData, setProductData] = useState(products || []);
 
     return (
-        <>
-            <Transition
-            show={showDeleteModal}
-            enter="transition ease-out duration-300 transform"
-            enterFrom="opacity-0 scale-85"
-            enterhref="opacity-100 scale-100"
-            leave="transition ease-in duration-75 transform"
-            leaveFrom="opacity-100 scale-100"
-            leavehref="opacity-0 scale-95"
-            >
+        <div className="w-full relative flex flex-col justify-center overflow-hidden pb-12">
+            <Head>
+                <title>Lista de produtos</title>
+            </Head>
+            <DataTable 
+                columns={columnNamesMock} 
+                children=
                 {
-                    showDeleteModal &&
-                    <Modal 
-                        primaryMessage="Tem certeza que deseja apagar esse produto ?"
-                        secondaryMessage="Tenha em mente que essa ação não poderá ser desfeita."
-                        body={deleteModalBody} 
-                    />
+                    productData.products.map((product, index) => {
+                        return (
+                        <DataTableRow key={index} product={product} onDelete={handleDeletion}/>
+                        )
+                    })
                 }
-            </Transition>
-
-            <div className="w-full relative flex flex-col justify-center overflow-hidden pb-12">
-                <Head>
-                    <title>Lista de produtos</title>
-                </Head>
-                <DataTable data={productData} columns={columnNamesMock} onDelete={handleDeletion} />
-            </div>
-        </>
+            />
+        </div>
     );
 }
 

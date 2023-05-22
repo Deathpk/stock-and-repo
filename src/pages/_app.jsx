@@ -1,10 +1,12 @@
 import '@/styles/globals.css'
-import { ToastContainer } from "react-toastify";
 import { AuthContext, AuthProvider } from '@/contexts/AuthContext';
-import 'react-toastify/dist/ReactToastify.css';
 import NavBar from '@/components/Navbar';
 import { NavbarTitleContextProvider } from '@/contexts/NavbarTitleContext';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+export const SwalAlert = withReactContent(Swal);
 
 export default function App({ Component, pageProps }) {
   const [navbarTitle, setNavbarTitle] = useState('');
@@ -13,7 +15,6 @@ export default function App({ Component, pageProps }) {
   return(
     <>
       <AuthProvider>
-        <ToastContainer outClose={5000} />
         <NavbarTitleContextProvider>
           <NavBar/>
           <Component {...pageProps}/>

@@ -5,7 +5,7 @@ import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import convert from "@/utils/moneyMask";
 import Head from "next/head";
 import { useContext, useState } from "react";
-import { toast } from "react-toastify";
+import { SwalAlert } from "../_app";
 
 export default function ProductWritedown () {
     const navbarTitleContext = useContext(NavbarTitleContext);
@@ -25,8 +25,10 @@ export default function ProductWritedown () {
         });
         setProcessingRequest(true);
         await productWriteDown(products);
-
-        toast.success("Baixa de estoque registrada com sucesso!");
+        SwalAlert.fire({
+            title: "Baixa de estoque registrada com sucesso!",
+            icon: "success"
+        });
         resetFormStates();
         setProcessingRequest(false);
     }
@@ -70,7 +72,10 @@ export default function ProductWritedown () {
 
     function handleProductAutoCompleteResultSelection(product) {
         if(product.available_quantity === 0) {
-            toast.warning("O produto escolhido não possui unidades suficientes para baixa.");
+            SwalAlert.fire({
+                title: "O produto escolhido não possui unidades suficientes para baixa.",
+                icon: "warning"
+            });
             return;
         }
 
@@ -90,7 +95,10 @@ export default function ProductWritedown () {
         const canProceedWithWritedown = selectedProducts.some(product => product.id === id && quantityForValidation <= product.available_quantity);
         
         if(!canProceedWithWritedown) {
-            toast.warning("O produto escolhido não possui unidades suficientes para dar baixa.");
+            SwalAlert.fire({
+                title: "O produto escolhido não possui unidades suficientes para baixa.",
+                icon: "warning"
+            });
             return false;
         }
 

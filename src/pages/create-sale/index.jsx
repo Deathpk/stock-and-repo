@@ -6,7 +6,7 @@ import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import convert from "@/utils/moneyMask";
 import Head from "next/head";
 import { useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { SwalAlert } from "../_app";
 
 export default function CreateSale() {
     const navbarTitleContext = useContext(NavbarTitleContext);
@@ -31,7 +31,9 @@ export default function CreateSale() {
         });
         setProcessingRequest(true);
         await removeSoldProducts(soldProducts);
-        toast.success("Venda lançada com sucesso!");
+        SwalAlert.fire({
+            title: "Venda lançada com sucesso!",
+        });
         resetFormStates();
         setProcessingRequest(false);
     }
@@ -75,7 +77,10 @@ export default function CreateSale() {
 
     function handleProductAutoCompleteResultSelection(product) {
         if(product.available_quantity === 0) {
-            toast.warning("O produto escolhido não possui unidades suficientes para venda.");
+            SwalAlert.fire({
+                title: "O produto escolhido não possui unidades suficientes para venda.",
+                icon: "warning"
+            });
             return;
         }
 
@@ -95,7 +100,11 @@ export default function CreateSale() {
         const canProceedWithSale = selectedProducts.some(product => product.id === id && quantityForValidation <= product.available_quantity);
         
         if(!canProceedWithSale) {
-            toast.warning("O produto escolhido não possui unidades suficientes para venda.");
+            SwalAlert.fire({
+                title: "O produto escolhido não possui unidades suficientes para venda.",
+                icon: "warning"
+            });
+
             return false;
         }
 
