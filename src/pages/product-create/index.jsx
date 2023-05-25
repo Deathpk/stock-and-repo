@@ -152,6 +152,7 @@ export default function ProductCreate() {
                                 isRequired={true}
                                 value={categoryName}
                                 searchResults={categoryResults}
+                                displayableColumn={"name"}
                                 onOptionSelect={handleCategoryAutoCompleteSelectionResult}
                             />
                         </div> 

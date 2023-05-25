@@ -1,34 +1,37 @@
 
-export default function Pagination({ items, pageSize, currentPage, onPageChange }) {
-    const pagesCount = Math.ceil(items / pageSize);
+export default function Pagination({ lastPage, totalItems, currentPage, onPageChange }) {
     const pageItemActiveStyle = 'flex justify-center items-center w-[2rem] h-[2rem] b-1 b-[#eaeaea] rounded-sm bg-red-700 cursor-pointer';
     const pageItemInactiveStyle = 'flex justify-center items-center w-[2rem] h-[2rem] b-1 b-[#eaeaea] rounded-sm bg-blue-300 cursor-pointer';
-
-    if(pagesCount === 1) return null;
-
-    const pages = Array.from({ length: pagesCount }, (_, i) => i+1);
     
+    const pageItems = () => {
+        let items = [];
+        for (let page = 1; page <= lastPage; page++) {
+            items.push(
+                <li
+                    key={page}
+                    className={`${page === currentPage ? pageItemActiveStyle : pageItemInactiveStyle} mx-1`}
+                    onClick={() => {onPageChange(page)}}
+                >
+                    { page }
+                </li>
+            );   
+        }
+
+        return items;
+    }
+
     return(
         <div>
             <ul className="ml-32 mt-5 flex items-center">
                 {
-                    pages.map((page) => 
-                        (
-                            <li
-                                key={page}
-                                className={`${page === currentPage ? pageItemActiveStyle : pageItemInactiveStyle} mx-1`}
-                                onClick={() => {onPageChange(page)}}
-                            >
-                                { page }
-                            </li>
-                        )
-                    )
+                    pageItems().map(item => {
+                        return item
+                    })
                 }
                 <li className="text-black mx-2">
-                    { items } items ao total
+                    { totalItems } items ao total
                 </li>
-            </ul>
-            
+            </ul>  
         </div>
     );
 }

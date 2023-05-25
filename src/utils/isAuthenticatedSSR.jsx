@@ -14,7 +14,7 @@ export function isAuthenticatedSSR(callback) {
             }
         }
     
-        try{
+        try {
             return await callback(context);
         } catch(error) {
             console.log(error);

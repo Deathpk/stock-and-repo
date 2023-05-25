@@ -24,7 +24,6 @@ export default function Home() {
       <Head>
         <title>Stock && Repo Faça seu login</title>
       </Head>
-      {/* <NavBar/> TODO */}
       <Card background="white">
                     <h1 className="text-3xl font-semibold text-center text-purple-700">
                         Entrar

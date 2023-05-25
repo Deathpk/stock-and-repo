@@ -33,6 +33,7 @@ export default function CreateSale() {
         await removeSoldProducts(soldProducts);
         SwalAlert.fire({
             title: "Venda lançada com sucesso!",
+            icon: "success"
         });
         resetFormStates();
         setProcessingRequest(false);

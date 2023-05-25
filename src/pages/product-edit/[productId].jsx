@@ -5,6 +5,9 @@ import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
 import { editProduct } from "@/services/api/products";
 import { SwalAlert } from "../_app";
 import { useRouter } from "next/router";
+import SearchAbleSelect from "@/components/SearchAbleSelect";
+import { categoryAutocomplete } from "@/services/api/category";
+import { brandAutocomplete } from "@/services/api/brand";
 
 export default function ProductEdit({ product }) {
     const navbarTitleContext = useContext(NavbarTitleContext);
@@ -16,10 +19,74 @@ export default function ProductEdit({ product }) {
     const [quantity, setQuantity] = useState(product.quantity);
     const [paidPrice, setPaidPrice] = useState(product.paid_price);
     const [sellingPrice, setSellingPrice] = useState(product.selling_price);
-    const [category, setCategory] = useState(product.category.name);
-    const [brand, setBrand] = useState(product.brand.name);
+    const [categoryName, setCategoryName] = useState(product.category.name || '');
+    const [categoryResults, setCategoryResults] = useState([]);
+    const [brandName, setBrandName] = useState(product.brand.name || '');
+    const [brandResults, setBrandResults] = useState([]);
     const [minimumQuantity, setMinimumQuantity] = useState(product.minimum_quantity);
-    const [externalProductId, setExternalProductId] = useState(product.external_product_id);
+    const [externalProductId, setExternalProductId] = useState(product.external_product_id || '');
+
+    function handleCategoryChange(event) {
+        const userInput = event.target.value;
+        setCategoryName(userInput);
+        
+        setTimeout(async () => {
+            await handleCategoryAutoComplete(userInput);
+        }, 100);
+    }
+
+    async function handleCategoryAutoComplete(userInput) {
+        let results;
+
+        if(userInput) {
+            results = await categoryAutocomplete(userInput);
+        }
+        
+        if(results) {
+            setCategoryResults(results.map((result) => {
+                return { name: result.name }
+            }));
+        } else {
+            setCategoryResults([]);
+        }
+    }
+
+
+    function handleCategoryAutoCompleteSelectionResult(category) {
+        console.log(category);
+        setCategoryName(category.name);
+        setCategoryResults([]);
+    }
+
+    async function handleBrandChange(event) {
+        const userInput = event.target.value;
+        setBrandName(userInput);
+        
+        setTimeout(async () => {
+            await handleBrandAutoComplete(userInput);
+        }, 100);
+    }
+
+    async function handleBrandAutoComplete(userInput) {
+        let results;
+
+        if(userInput) {
+            results = await brandAutocomplete(userInput);
+        }
+        
+        if(results) {
+            setBrandResults(results.map((result) => {
+                return { name: result.name }
+            }));
+        } else {
+            setBrandResults([]);
+        }
+    }
+
+    function handleBrandAutoCompleteSelectionResult(brand) {
+        setBrandName(brand.name);
+        setBrandResults([]);
+    }
 
      async function submitHandler(event) {
         event.preventDefault();
@@ -30,8 +97,8 @@ export default function ProductEdit({ product }) {
             quantity: quantity,
             paidPrice: paidPrice,
             sellingPrice: sellingPrice,
-            category: category,
-            brand: brand,
+            categoryName: categoryName,
+            brandName: brandName,
             minimumQuantity: minimumQuantity,
             externalProductId: externalProductId
         }
@@ -152,14 +219,16 @@ export default function ProductEdit({ product }) {
                         >
                             Categoria
                         </label>
-                        {/* <SearchableSelect /> */}
-                        <input
-                            type="text"
-                            id="category"
-                            value={category}
-                            onChange={(e)=> setCategory(e.target.value)}
-                            className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        <SearchAbleSelect 
+                            onChange={handleCategoryChange}
+                            idForLabel="category"
+                            isRequired={true}
+                            value={categoryName}
+                            searchResults={categoryResults}
+                            displayableColumn={"name"}
+                            onOptionSelect={handleCategoryAutoCompleteSelectionResult}
                         />
+                        
                     </div>
 
                     <div className="mb-2">
@@ -169,12 +238,14 @@ export default function ProductEdit({ product }) {
                         >
                             Marca
                         </label>
-                        <input
-                            type="text"
-                            id="brand"
-                            value={brand}
-                            onChange={(e)=> setBrand(e.target.value)}
-                            className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        <SearchAbleSelect 
+                            onChange={handleBrandChange}
+                            idForLabel="brand"
+                            isRequired={true}
+                            value={brandName}
+                            searchResults={brandResults}
+                            displayableColumn={"name"}
+                            onOptionSelect={handleBrandAutoCompleteSelectionResult}
                         />
                     </div>  
 
@@ -212,7 +283,6 @@ export const getServerSideProps = isAuthenticatedSSR(async (context) => {
 
      const apiClient = setupAPIClient(context);
      const response = await apiClient.get(`/products/${params.productId}`);
-     console.log(response);
      return {
         props: { product: response.data.product }
      }

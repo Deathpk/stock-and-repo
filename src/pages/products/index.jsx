@@ -4,19 +4,33 @@ import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import { setupAPIClient } from "@/services/api/api";
 import Head from "next/head";
 import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
-import { Transition } from "@headlessui/react";
-import Modal from "@/components/Modal";
 import { deleteProduct } from "@/services/api/products"; 
 import { useRouter } from "next/router";
 import DataTableRow from "@/components/DataTableRow";
 import { SwalAlert } from "../_app";
+import Pagination from "@/components/Pagination";
+import convert from "@/utils/moneyMask";
+import DataTableActions from "@/components/DataTableActions";
 
-export default function ProductList ({ products }) {
+export default function ProductList ({ products, currentPageData, lastPageData, totalItemsData  }) {
     
     let router = useRouter();
     const navbarTitleContext = useContext(NavbarTitleContext);
     navbarTitleContext.updateNavbarTitle("Produtos Cadastrados");
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [productData, setProductData] = useState(products || []);
+    const [currentPage, setCurrentPage] = useState(currentPageData || 1);
+    let lastPage = lastPageData;
+    let totalItems = totalItemsData;
+
+    useEffect(() => {
+        async function fetchProducts () {
+            const apiClient = setupAPIClient();
+            const response = await apiClient.get(`/products?page=${currentPage}`);
+            setProductData(response.data.data);
+        }
+        
+        fetchProducts();
+    }, [currentPage])
 
     function handleDeletion(targetId) {
         SwalAlert.fire({
@@ -47,8 +61,20 @@ export default function ProductList ({ products }) {
         },5000);
     }
 
+    function resolveActions(targetId) {
+       return(
+            <DataTableActions actions={
+                    <>
+                        <a href={`/products/${targetId}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline px-1">Detalhes</a>
+                        <a href={`/product-edit/${targetId}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline px-1">Editar</a>
+                        <a onClick={() => {handleDeletion(targetId)}} className="cursor-pointer font-medium text-blue-600 dark:text-blue-500 hover:underline px-1">Deletar</a>
+                    </>
+                } 
+            />
+       )
+    }
+
     const columnNamesMock = ['Id', 'Nome Produto', 'Marca', 'Categoria', 'Quantidade atual', 'Quantidade minima permitida em estoque', 'Preço de venda', 'Ações'];
-    const [productData, setProductData] = useState(products || []);
 
     return (
         <div className="w-full relative flex flex-col justify-center overflow-hidden pb-12">
@@ -61,10 +87,28 @@ export default function ProductList ({ products }) {
                 {
                     productData.products.map((product, index) => {
                         return (
-                        <DataTableRow key={index} product={product} onDelete={handleDeletion}/>
+                            <>
+                                <DataTableRow key={index} data={[
+                                    product.id,
+                                    product.name,
+                                    product.brand.name,
+                                    product.category.name,
+                                    product.quantity,
+                                    product.minimum_quantity,
+                                    convert(product.selling_price)
+                                    ]} 
+                                    actions={resolveActions(product.id)}
+                                />
+                            </>
                         )
                     })
                 }
+            />
+            <Pagination
+                currentPage={currentPage}
+                lastPage={lastPage}
+                totalItems={totalItems}
+                onPageChange={(page) => {setCurrentPage(page)}}
             />
         </div>
     );
@@ -75,6 +119,11 @@ export const getServerSideProps = isAuthenticatedSSR(async (context) => {
     const response = await apiClient.get('/products');
     
     return {
-        props: {products: response.data.data}
+        props: {
+            products: response.data.data,
+            currentPageData: response.data.meta.current_page,
+            lastPageData: response.data.meta.last_page,
+            totalItemsData: response.data.meta.total
+        }
     }
 });
