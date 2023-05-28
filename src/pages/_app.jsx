@@ -17,7 +17,9 @@ export default function App({ Component, pageProps }) {
       <AuthProvider>
         <NavbarTitleContextProvider>
           <NavBar/>
-          <Component {...pageProps}/>
+          <div className="p-4 sm:ml-64">
+            <Component {...pageProps}/>
+          </div>
         </NavbarTitleContextProvider>
       </AuthProvider>
     </>
