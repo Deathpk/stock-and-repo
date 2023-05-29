@@ -1,21 +1,22 @@
 import SearchAbleSelect from "@/components/SearchAbleSelect";
 import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
 import { setupAPIClient } from "@/services/api/api";
-import { productAutocomplete, removeSoldProducts } from "@/services/api/products";
+import { productAutocomplete, productWriteDown, removeSoldProducts } from "@/services/api/products";
 import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import convert from "@/utils/moneyMask";
 import Head from "next/head";
 import { useContext, useEffect, useState } from "react";
-import { SwalAlert } from "../_app";
+import { SwalAlert } from "../../_app";
 
 export default function CreateSale() {
     const navbarTitleContext = useContext(NavbarTitleContext);
-    navbarTitleContext.updateNavbarTitle("Lançar venda");
+    navbarTitleContext.updateNavbarTitle("Lançar baixa de produtos");
     const [productIdentification, setProductIdentification] = useState('');
     const [productsSearchResult, setProductsSearchResult] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [totalOnCart, setTotalOnCart] = useState(0);
     const [processingRequest, setProcessingRequest] = useState(false);
+    const [isSale, setIsSale] = useState(false);
 
     useEffect(()=> {
         updateTotalValue();
@@ -23,16 +24,24 @@ export default function CreateSale() {
 
     async function handleSubmit(event) {
         event.preventDefault();
-        const soldProducts = selectedProducts.map((soldProduct) => {
+        const products = selectedProducts.map((selectedProduct) => {
+            if(isSale) {
+                return {
+                    productId: selectedProduct.id,
+                    soldQuantity: selectedProduct.qtd
+                }
+            }
+
             return {
-                productId: soldProduct.id,
-                soldQuantity: soldProduct.qtd
+                productId: selectedProduct.id,
+                quantityToRemove: selectedProduct.qtd
             }
         });
         setProcessingRequest(true);
-        await removeSoldProducts(soldProducts);
+        isSale ? await removeSoldProducts(products) : await productWriteDown(products);
+       
         SwalAlert.fire({
-            title: "Venda lançada com sucesso!",
+            title: "Baixa lançada com sucesso!",
             icon: "success"
         });
         resetFormStates();
@@ -173,11 +182,10 @@ export default function CreateSale() {
     return(
             <div className="relative flex flex-col justify-center min-h-screen overflow-hidden py-2">
                 <Head>
-                    <title>Lançar venda</title>
+                    <title>Lançar baixa</title>
                 </Head>
                 <div className="w-full p-6 m-auto bg-white rounded-md shadow-md lg:max-w-5xl">
                     <form className="mt-2" onSubmit={ handleSubmit }>
-
                         <div className="mb-2">
                             <label
                                 htmlFor="productIdentification"
@@ -194,6 +202,20 @@ export default function CreateSale() {
                                 displayableColumn="name"
                                 onOptionSelect={handleProductAutoCompleteResultSelection}
                             />
+                        </div>
+                        <div className="relative flex flex-wrap items-center">
+                            <input
+                            className="peer relative h-4 w-8 cursor-pointer appearance-none rounded-lg bg-slate-300 transition-colors after:absolute after:top-0 after:left-0 after:h-4 after:w-4 after:rounded-full after:bg-slate-500 after:transition-all checked:bg-emerald-200 checked:after:left-4 checked:after:bg-emerald-500 hover:bg-slate-400 after:hover:bg-slate-600 checked:hover:bg-emerald-300 checked:after:hover:bg-emerald-600 focus:outline-none checked:focus:bg-emerald-400 checked:after:focus:bg-emerald-700 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-slate-200 disabled:after:bg-slate-300"
+                            type="checkbox"
+                            onChange={() => setIsSale(!isSale)}
+                            id="id-c01"
+                            />
+                            <label
+                            className="cursor-pointer pl-2 text-slate-500 peer-disabled:cursor-not-allowed peer-disabled:text-slate-400"
+                            htmlFor="id-c01"
+                            >
+                                Baixa por meio de venda
+                            </label>
                         </div> 
 
                         <div className="w-full bg-slate-200">
@@ -215,7 +237,7 @@ export default function CreateSale() {
                                 hover:bg-purple-600 
                                 focus:outline-none focus:bg-purple-600
                                 disabled:bg-slate-400">
-                                { processingRequest ? 'Aguarda enquanto lançamos a venda...' : 'Lançar venda' }
+                                { processingRequest ? 'Aguarda enquanto lançamos a baixa...' : 'Lançar baixa' }
                             </button>
                         </div>
                     </form>

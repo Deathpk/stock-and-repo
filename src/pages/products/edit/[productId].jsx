@@ -3,11 +3,13 @@ import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import { setupAPIClient } from "@/services/api/api";
 import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
 import { editProduct } from "@/services/api/products";
-import { SwalAlert } from "../_app";
+import { SwalAlert } from "../../_app";
 import { useRouter } from "next/router";
 import SearchAbleSelect from "@/components/SearchAbleSelect";
 import { categoryAutocomplete } from "@/services/api/category";
 import { brandAutocomplete } from "@/services/api/brand";
+import { FaInfoCircle } from "react-icons/fa";
+import ToolTip from "@/components/ToolTip";
 
 export default function ProductEdit({ product }) {
     const navbarTitleContext = useContext(NavbarTitleContext);
@@ -151,11 +153,18 @@ export default function ProductEdit({ product }) {
                     <div className="mb-2">
                         <label
                             htmlFor="quantity"
-                            className="block text-sm font-semibold text-gray-800"
+                            className="flex items-center text-sm font-semibold text-gray-800"
                         >
-                            Quantidade em estoque atual
+                            <ToolTip 
+                                label={"Quantidade em estoque atual"} 
+                                message={"Para alterar a quantidade atual lance uma baixa/venda e ou lance uma adição de estoque no menu lançamentos."}
+                                icon={<FaInfoCircle className="mx-1"/>} 
+                            />
+                             
                         </label>
+                        
                         <input
+                            disabled
                             type="number"
                             id="quantity"
                             value={quantity}

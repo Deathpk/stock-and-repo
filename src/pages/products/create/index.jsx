@@ -5,7 +5,7 @@ import { brandAutocomplete } from "@/services/api/brand";
 import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
 import { useContext, useRef, useState } from "react";
 import SearchAbleSelect from "@/components/SearchAbleSelect";
-import { SwalAlert } from "../_app";
+import { SwalAlert } from "../../_app";
 import { useRouter } from "next/router";
 
 export default function ProductCreate() {

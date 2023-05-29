@@ -2,7 +2,10 @@ import { useContext, useRef, useState } from "react";
 import { AuthContext } from "@/contexts/AuthContext";
 import Head from "next/head";
 import { isAuthenticatedSSR } from "@/utils/isAuthenticatedSSR";
+import { NavbarTitleContext } from "@/contexts/NavbarTitleContext";
 export default function ChangePassword () {
+    const navbarTitleContext = useContext(NavbarTitleContext);
+    navbarTitleContext.updateNavbarTitle("Trocar senha");
 
     const [processingRequest, setProcessingRequest] = useState(false);
     const oldPasswordRef = useRef();
@@ -22,14 +25,11 @@ export default function ChangePassword () {
     }
 
     return(
-        <div className="relative flex flex-col justify-center min-h-screen overflow-hidden py-5">
+        <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
                 <Head>
                     <title>Mudar senha</title>
                 </Head>
                 <div className="w-full p-6 m-auto bg-white rounded-md shadow-md lg:max-w-5xl">
-                    <h1 className="text-3xl font-semibold text-center text-purple-700">
-                        Mudar senha
-                    </h1>
                     <form className="mt-6" onSubmit={submitHandler}>                  
                        <div className="mb-2">
                             <label

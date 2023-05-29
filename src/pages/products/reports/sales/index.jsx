@@ -9,8 +9,9 @@ import convert from "@/utils/moneyMask";
 import DataTable from "@/components/DataTable";
 import DataTableRow from "@/components/DataTableRow";
 import Pagination from "@/components/Pagination";
+import { SwalAlert } from "@/pages/_app";
 
-export default function SalesReport({ metadata, sales, currentPageData, lastPageData, totalItemsData }) {
+export default function SalesReport({ metadata, currentMonthIndex, sales, currentPageData, lastPageData, totalItemsData }) {
     const navbarTitleContext = useContext(NavbarTitleContext);
     navbarTitleContext.updateNavbarTitle("Relatório de vendas");
     const [currentPage, setCurrentPage] = useState(currentPageData || 1);
@@ -28,10 +29,8 @@ export default function SalesReport({ metadata, sales, currentPageData, lastPage
     
     const [filterType, setFilterType] = useState('monthly');
     const [filterOptions, setFilterOptions] = useState(availableFilterOptions.monthly);
-    const [selectedOption, setSelectedOption] = useState(availableFilterOptions.monthly[0]);
+    const [selectedOption, setSelectedOption] = useState(availableFilterOptions.monthly[currentMonthIndex]);
     const [filterApplied, setFilterApplied] = useState(false);
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [saleDetails, setSaleDetails] = useState([]);
 
     useEffect(() => {
         async function fetchFilteredResults() {
@@ -47,9 +46,7 @@ export default function SalesReport({ metadata, sales, currentPageData, lastPage
             setCurrentPage(response.sales.current_page);
         }
         fetchFilteredResults();
-
-        return () => setFilterApplied(false);
-    }, [filterApplied]);
+    }, [filterApplied, currentPage]);
 
     function handleFilterType(event) {
         setFilterType(event.target.value);
@@ -58,43 +55,16 @@ export default function SalesReport({ metadata, sales, currentPageData, lastPage
     }
 
     function handleShowDetails(products) {
-        setSaleDetails(products);
-        setShowDetailsModal(true);
-    }
 
-    function detailsModalBody() {
-        return(
-            <div className="justify-between px-52 py-3 text-black max-h-52 overflow-y-scroll">
-                {
-                    saleDetails.map((detail, key) => {
-                        return (
-                            <div className="flex flex-col" key={key}>
-                                <span className="flex flex-row">{detail.name}</span>
-                                <span className="mb-2">{convert(detail.paid_price)}</span>
-                            </div>
-                        )
-                    })
-                }
-                <button className="text-white bg-red-500 mt-2 py-2 px-1 rounded-md" onClick={() => {setShowDetailsModal(false)}}>Fechar</button>
-            </div>
-        );
-    }
+        const productsDataInHtml = products.map((product, index) => {
+            return `<div><b>ID</b>: ${product.id} <b>Produto</b>: ${product.name}</div><br>`
+        });
 
-    function showSaleDetails() {
-        return(
-            <>
-                {
-                    showDetailsModal &&
-                    <Modal 
-                        primaryMessage="Detalhes da venda"
-                        widthInPx={600}
-                        heightInPx={250}
-                        leftInPercentage={"35"}
-                        body={detailsModalBody} 
-                    />
-                }
-            </>
-        );
+        SwalAlert.fire({
+            title: "Produtos vendidos",
+            html: new String(productsDataInHtml).replaceAll(',', ''),
+            icon: "info"
+        });
     }
 
     function handleOptionValue(event) {
@@ -190,9 +160,6 @@ export default function SalesReport({ metadata, sales, currentPageData, lastPage
                 totalItems={totalItems}
                 onPageChange={(page) => {setCurrentPage(page)}}
                 />
-                {
-                    showDetailsModal && showSaleDetails()
-                }
             </div>
         </>
     );
@@ -204,10 +171,10 @@ export const getServerSideProps = isAuthenticatedSSR(async (context) => {
 
     const apiClient = setupAPIClient(context);
     const response = await apiClient.get(`/reports/sales?filterType=monthly&value=${currentMonth}`);
-
     return {
        props: { 
             metadata: response.data.metadata,
+            currentMonthIndex: currentMonth - 1,
             sales: response.data.sales,
             currentPageData: response.data.sales.current_page,
             lastPageData: response.data.sales.last_page,

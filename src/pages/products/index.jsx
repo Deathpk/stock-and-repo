@@ -117,7 +117,6 @@ export default function ProductList ({ products, currentPageData, lastPageData, 
 export const getServerSideProps = isAuthenticatedSSR(async (context) => {
     const apiClient = setupAPIClient(context);
     const response = await apiClient.get('/products');
-    
     return {
         props: {
             products: response.data.data,

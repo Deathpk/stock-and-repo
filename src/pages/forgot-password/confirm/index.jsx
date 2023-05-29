@@ -15,7 +15,7 @@ export default function RecoverPasswordConfirmation() {
             randomPassword: randomPasswordRef.current.value
         }
         
-        confirmPasswordRecovery(randomPassword, navigate);
+        confirmPasswordRecovery(randomPassword);
     }
 
    return(
